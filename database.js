@@ -1,37 +1,42 @@
 const mysql = require('mysql2');
 
-const connection = mysql.createConnection({
+// Create connection pool
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE
+  database: process.env.DB_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-connection.connect((err) => {
+// Verify the connection pool
+pool.getConnection((err, connection) => {
   if (err) {
-    console.error('Error connecting with MySQL:', err);
+    console.error('Error connecting to MySQL:', err);
   } else {
-    console.log('Connection with database successfully');
-    initializeDatabase();
+    console.log('Connected to MySQL database as id ' + connection.threadId);
+    initializeDatabase(connection);
   }
 });
 
-function initializeDatabase() {
+function initializeDatabase(connection) {
   const createDatabaseQuery = `CREATE DATABASE IF NOT EXISTS ${process.env.DB_DATABASE}`;
-  
+
   connection.query(createDatabaseQuery, (err) => {
     if (err) {
       console.error('Error creating database:', err);
-      connection.end();
+      connection.release();
       return;
     }
-    
+
     console.log('Database created or already exists.');
-    createTableUser();
+    createTableUser(connection);
   });
 }
 
-function createTableUser() {
+function createTableUser(connection) {
   const createTableUserQuery = `
     CREATE TABLE IF NOT EXISTS user (
       id INT NOT NULL AUTO_INCREMENT,
@@ -49,16 +54,16 @@ function createTableUser() {
   connection.query(createTableUserQuery, (err) => {
     if (err) {
       console.error('Error creating user table:', err);
-      connection.end();
+      connection.release();
       return;
     }
-    
+
     console.log('User table created or already exists.');
-    createTableChallenge();
+    createTableChallenge(connection);
   });
 }
 
-function createTableChallenge() {
+function createTableChallenge(connection) {
   const createTableChallengeQuery = `
     CREATE TABLE IF NOT EXISTS challenge (
       id INT NOT NULL AUTO_INCREMENT,
@@ -70,13 +75,13 @@ function createTableChallenge() {
   connection.query(createTableChallengeQuery, (err) => {
     if (err) {
       console.error('Error creating challenge table:', err);
-      connection.end();
+      connection.release();
       return;
     }
-    
+
     console.log('Challenge table created or already exists.');
-    connection.end();
+    connection.release();
   });
 }
 
-module.exports = connection;
+module.exports = pool;
