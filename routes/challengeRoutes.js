@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 require('dotenv').config();
-const connection = require('../database');
+const connection = require('../db/database');
 
 router.get('/', (req, res) => {
     try {

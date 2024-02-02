@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
-const connection = require('../database');
+const connection = require('../db/database');
 require('dotenv').config();
 
 router.post('/login', (req, res) => {
