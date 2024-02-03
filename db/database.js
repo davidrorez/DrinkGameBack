@@ -46,6 +46,7 @@ function useDatabase(connection) {
     }
 
     console.log(`Using database: ${process.env.DB_DATABASE}.`);
+    connection.release();
   });
 }
 
@@ -72,6 +73,7 @@ function createTableUser(connection) {
     }
 
     console.log("User table created or already exists.");
+    connection.release();
   });
 }
 
@@ -170,7 +172,6 @@ function insertSeeds(connection) {
       } else {
         console.log("Seeds already inserted");
       }
-
       connection.release();
     }
   );
